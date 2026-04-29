@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>民间借贷利息计算器（带Excel导出功能）</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        /* 标题样式 */
+        .main-title {
+            text-align: center;
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        /* 布局样式 */
+        .layout {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .left-column,
+        .right-column {
+            flex: 1;
+            min-width: 300px;
+            padding: 0 10px;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            color: #2980b9;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* 输入组样式 */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #444;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 单选按钮组 */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .radio-item {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .radio-item input[type="radio"] {
+            display: none;
+        }
+        
+        .radio-item label {
+            display: block;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .radio-item input[type="radio"]:checked + label {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        /* 按钮样式 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        /* 利率分段样式 */
+        .rate-period {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+        
+        .period-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .period-title {
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .remove-period {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .period-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .period-field {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        /* 结果摘要样式 */
+        .summary-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 150px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .summary-item.total {
+            background: #3498db;
+            color: white;
+        }
+        
+        .summary-item h4 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .summary-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .summary-item.total .summary-amount {
+            color: white;
+        }
+        
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        table th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+            padding: 12px 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        /* 表格操作按钮 */
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .table-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .table-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .table-btn.excel {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+        
+        .table-btn.excel:hover {
+            background: #219653;
+        }
+        
+        /* 司法文书样式 */
+        .document-box {
+            background: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            line-height: 1.8;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 50px;
+            color: #95a5a6;
+            margin-bottom: 15px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .layout {
+                flex-direction: column;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .period-fields {
+                flex-direction: column;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+            }
+            
+            .summary-grid {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">民间借贷利息计算器（带Excel导出功能）</h1>
+        
+        <div class="layout">
+            <!-- 左侧输入区域 -->
+            <div class="left-column">
+                <!-- 借款基本信息 -->
+                <div class="card">
+                    <div class="card-title">💰 借款基本信息</div>
+                    
+                    <div class="input-group">
+                        <label for="principal">借款本金（元）</label>
+                        <input type="number" id="principal" min="0" step="100" value="100000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="loanDate">借款日期</label>
+                        <input type="date" id="loanDate">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="dueDate">约定还款日期</label>
+                        <input type="date" id="dueDate">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="actualDate">实际还款日期</label>
+                        <input type="date" id="actualDate">
+                    </div>
+                </div>
+                
+                <!-- 还款方式与利率 -->
+                <div class="card">
+                    <div class="card-title">📊 还款方式与利率</div>
+                    
+                    <div class="input-group">
+                        <label>还款方式</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="method1" name="repayment_method" value="equal_principal_interest" checked>
+                                <label for="method1">等额本息</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="method2" name="repayment_method" value="equal_principal">
+                                <label for="method2">等额本金</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="method3" name="repayment_method" value="interest_first">
+                                <label for="method3">先息后本</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="method4" name="repayment_method" value="principal_first">
+                                <label for="method4">先本后息</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="annualRate">年利率（%）</label>
+                        <input type="number" id="annualRate" min="0" max="24" step="0.01" value="4.35">
+                    </div>
+                    
+                    <div class="input-group" id="installmentGroup">
+                        <label for="installments">分期期数（月）</label>
+                        <input type="number" id="installments" min="1" max="360" value="12">
+                    </div>
+                    
+                    <div class="input-group" id="singleRepaymentGroup" style="display:none;">
+                        <label>是否一次性还本付息</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="single_yes" name="single_repayment" value="yes">
+                                <label for="single_yes">是</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="single_no" name="single_repayment" value="no" checked>
+                                <label for="single_no">否</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 罚息与复利设置 -->
+                <div class="card">
+                    <div class="card-title">⚖️ 罚息与复利设置</div>
+                    
+                    <div class="input-group">
+                        <label for="penaltyRate">罚息利率（%）</label>
+                        <input type="number" id="penaltyRate" min="0" step="0.01" value="5">
+                        <span style="font-size:12px;color:#888;">逾期后每日额外利率</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="penaltyBase">罚息计算基数</label>
+                        <select id="penaltyBase">
+                            <option value="principal">仅本金</option>
+                            <option value="principal_interest" selected>本金+利息</option>
+                            <option value="total">全部应还金额</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="compoundType">复利计算方式</label>
+                        <select id="compoundType">
+                            <option value="none">不计复利</option>
+                            <option value="monthly">按月计算复利</option>
+                            <option value="quarterly">按季计算复利</option>
+                            <option value="yearly">按年计算复利</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>利率分段设置</label>
+                        <button type="button" class="table-btn" onclick="addRatePeriod()" style="width:100%;margin-bottom:10px;">
+                            ➕ 添加利率分段
+                        </button>
+                        <div id="ratePeriodsContainer"></div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="calculate()">
+                        🧮 开始计算
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetForm()">
+                        🔄 重置表单
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 右侧结果区域 -->
+            <div class="right-column">
+                <div id="resultSection" style="display:none;">
+                    <!-- 计算结果摘要 -->
+                    <div class="card">
+                        <div class="card-title">📈 计算结果摘要</div>
+                        
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <h4>借款本金</h4>
+                                <div class="summary-amount" id="summaryPrincipal">0.00</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h4>正常利息</h4>
+                                <div class="summary-amount" id="summaryInterest">0.00</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h4>逾期罚息</h4>
+                                <div class="summary-amount" id="summaryPenalty">0.00</div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <h4>复利金额</h4>
+                                <div class="summary-amount" id="summaryCompound">0.00</div>
+                            </div>
+                            
+                            <div class="summary-item total">
+                                <h4>总计应还</h4>
+                                <div class="summary-amount" id="summaryTotal">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细结果区域 -->
+                    <div class="card">
+                        <div class="tabs">
+                            <button class="tab active" onclick="switchTab('schedule')">还款计划表</button>
+                            <button class="tab" onclick="switchTab('details')">详细计算过程</button>
+                            <button class="tab" onclick="switchTab('document')">司法文书格式</button>
+                        </div>
+                        
+                        <!-- 还款计划表 -->
+                        <div id="schedule" class="tab-content active">
+                            <div class="table-actions">
+                                <button class="table-btn excel" onclick="exportToExcel()">
+                                    📊 导出Excel
+                                </button>
+                                <button class="table-btn" onclick="copyTable()">
+                                    📋 复制表格
+                                </button>
+                                <button class="table-btn" onclick="printTable()">
+                                    🖨️ 打印表格
+                                </button>
+                            </div>
+                            
+                            <div class="table-container">
+                                <table id="repaymentSchedule">
+                                    <thead>
+                                        <tr>
+                                            <th>期数</th>
+                                            <th>还款日期</th>
+                                            <th>期初本金</th>
+                                            <th>应还本金</th>
+                                            <th>应还利息</th>
+                                            <th>当期还款</th>
+                                            <th>期末本金</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scheduleBody">
+                                        <!-- 动态生成 -->
+                                    </tbody>
+                                    <tfoot id="scheduleFooter">
+                                        <!-- 动态生成总计行 -->
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- 详细计算过程 -->
+                        <div id="details" class="tab-content">
+                            <div id="calculationDetails">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 司法文书格式 -->
+                        <div id="document" class="tab-content">
+                            <div class="document-box" id="documentText">
+                                <!-- 动态生成 -->
+                            </div>
+                            <div class="table-actions">
+                                <button class="table-btn" onclick="copyDocumentText()">
+                                    📋 复制文本
+                                </button>
+                                <button class="table-btn" onclick="printDocument()">
+                                    🖨️ 打印文书
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 空状态 -->
+                <div id="noResultSection" class="card">
+                    <div class="empty-state">
+                        <div style="font-size:48px;margin-bottom:15px;">📊</div>
+                        <h3 style="color:#666;margin-bottom:15px;">等待计算</h3>
+                        <p style="color:#888;">请填写左侧借款信息，然后点击"开始计算"按钮</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        var ratePeriods = [];
+        var currentTab = 'schedule';
+        var currentScheduleData = []; // 存储当前还款计划数据
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            // 设置默认日期
+            var today = new Date();
+            var oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+            var threeMonthsLater = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+            
+            // 设置日期输入框的值
+            document.getElementById('loanDate').value = formatDateInput(oneYearAgo);
+            document.getElementById('dueDate').value = formatDateInput(today);
+            document.getElementById('actualDate').value = formatDateInput(threeMonthsLater);
+            
+            // 监听还款方式变化
+            var radios = document.getElementsByName('repayment_method');
+            for (var i = 0; i < radios.length; i++) {
+                radios[i].addEventListener('change', updateRepaymentOptions);
+            }
+            
+            // 初始化利率分段
+            addRatePeriod();
+            
+            // 初始显示
+            updateRepaymentOptions();
+        };
+        
+        // 更新还款选项显示
+        function updateRepaymentOptions() {
+            var method = getSelectedValue('repayment_method');
+            var singleRepaymentGroup = document.getElementById('singleRepaymentGroup');
+            
+            // 先息后本和先本后息显示一次性还本付息选项
+            if (method === 'interest_first' || method === 'principal_first') {
+                singleRepaymentGroup.style.display = 'block';
+            } else {
+                singleRepaymentGroup.style.display = 'none';
+            }
+        }
+        
+        // 获取单选按钮组的值
+        function getSelectedValue(name) {
+            var radios = document.getElementsByName(name);
+            for (var i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    return radios[i].value;
+                }
+            }
+            return '';
+        }
+        
+        // 添加利率分段
+        function addRatePeriod() {
+            var container = document.getElementById('ratePeriodsContainer');
+            var periodCount = ratePeriods.length + 1;
+            
+            // 计算默认日期
+            var today = new Date();
+            var startDate = new Date(today);
+            var endDate = new Date(today);
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            
+            var periodDiv = document.createElement('div');
+            periodDiv.className = 'rate-period';
+            
+            periodDiv.innerHTML = '<div class="period-header">' +
+                '<span class="period-title">第' + periodCount + '段利率</span>' +
+                (periodCount > 1 ? '<button type="button" class="remove-period" onclick="removeRatePeriod(this)">删除</button>' : '') +
+                '</div>' +
+                '<div class="period-fields">' +
+                '<div class="period-field">' +
+                '<label style="font-size:12px;display:block;margin-bottom:5px;">起始日期</label>' +
+                '<input type="date" class="period-start" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" value="' + formatDateInput(startDate) + '">' +
+                '</div>' +
+                '<div class="period-field">' +
+                '<label style="font-size:12px;display:block;margin-bottom:5px;">结束日期</label>' +
+                '<input type="date" class="period-end" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" value="' + formatDateInput(endDate) + '">' +
+                '</div>' +
+                '<div class="period-field">' +
+                '<label style="font-size:12px;display:block;margin-bottom:5px;">年利率（%）</label>' +
+                '<input type="number" class="period-rate" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;" value="4.35" step="0.01" min="0">' +
+                '</div>' +
+                '</div>';
+            
+            container.appendChild(periodDiv);
+            
+            // 更新利率分段数组
+            updateRatePeriods();
+        }
+        
+        // 删除利率分段
+        function removeRatePeriod(button) {
+            var periodDiv = button.parentNode.parentNode;
+            periodDiv.parentNode.removeChild(periodDiv);
+            updateRatePeriods();
+        }
+        
+        // 更新利率分段数组
+        function updateRatePeriods() {
+            ratePeriods = [];
+            var periodDivs = document.getElementsByClassName('rate-period');
+            
+            for (var i = 0; i < periodDivs.length; i++) {
+                var div = periodDivs[i];
+                var startInput = div.querySelector('.period-start');
+                var endInput = div.querySelector('.period-end');
+                var rateInput = div.querySelector('.period-rate');
+                
+                if (startInput && endInput && rateInput) {
+                    var start = new Date(startInput.value);
+                    var end = new Date(endInput.value);
+                    var rate = parseFloat(rateInput.value);
+                    
+                    // 检查日期有效性
+                    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                        continue;
+                    }
+                    
+                    ratePeriods.push({
+                        index: i + 1,
+                        start: start,
+                        end: end,
+                        rate: rate / 100  // 转换为小数
+                    });
+                }
+            }
+        }
+        
+        // 核心计算函数
+        function calculate() {
+            try {
+                // 获取基础参数
+                var principal = parseFloat(document.getElementById('principal').value);
+                var loanDate = new Date(document.getElementById('loanDate').value);
+                var dueDate = new Date(document.getElementById('dueDate').value);
+                var actualDate = new Date(document.getElementById('actualDate').value);
+                var annualRate = parseFloat(document.getElementById('annualRate').value) / 100;
+                var penaltyRate = parseFloat(document.getElementById('penaltyRate').value) / 100;
+                var penaltyBase = document.getElementById('penaltyBase').value;
+                var compoundType = document.getElementById('compoundType').value;
+                
+                // 获取还款方式
+                var repaymentMethod = getSelectedValue('repayment_method');
+                var installments = parseInt(document.getElementById('installments').value) || 12;
+                var singleRepayment = getSelectedValue('single_repayment') === 'yes';
+                
+                // 验证输入
+                if (!principal || principal <= 0 || isNaN(principal)) {
+                    alert('请输入有效的借款本金！');
+                    return;
+                }
+                
+                if (isNaN(loanDate.getTime()) || isNaN(dueDate.getTime()) || isNaN(actualDate.getTime())) {
+                    alert('请输入有效的日期！');
+                    return;
+                }
+                
+                if (dueDate < loanDate) {
+                    alert('约定还款日期不能早于借款日期！');
+                    return;
+                }
+                
+                // 更新利率分段
+                updateRatePeriods();
+                
+                // 如果没有设置利率分段，使用统一利率
+                if (ratePeriods.length === 0) {
+                    ratePeriods.push({
+                        index: 1,
+                        start: loanDate,
+                        end: actualDate,
+                        rate: annualRate
+                    });
+                }
+                
+                // 计算天数
+                var totalDays = Math.max(1, Math.ceil((actualDate - loanDate) / (1000 * 60 * 60 * 24)));
+                var normalDays = Math.max(1, Math.ceil((dueDate - loanDate) / (1000 * 60 * 60 * 24)));
+                var overdueDays = Math.max(0, Math.ceil((actualDate - dueDate) / (1000 * 60 * 60 * 24)));
+                
+                var result = {};
+                
+                // 根据不同还款方式计算
+                switch (repaymentMethod) {
+                    case 'equal_principal_interest':
+                        result = calculateEqualPrincipalInterest(principal, installments);
+                        break;
+                    case 'equal_principal':
+                        result = calculateEqualPrincipal(principal, installments);
+                        break;
+                    case 'interest_first':
+                        result = calculateInterestFirst(principal, installments, singleRepayment);
+                        break;
+                    case 'principal_first':
+                        result = calculatePrincipalFirst(principal, installments, singleRepayment);
+                        break;
+                    default:
+                        result = calculateEqualPrincipalInterest(principal, installments);
+                }
+                
+                // 计算罚息
+                result.penalty = calculatePenalty(result.principal, result.normalInterest, penaltyRate, penaltyBase, overdueDays);
+                
+                // 计算复利
+                result.compound = calculateCompoundInterest(result.normalInterest, annualRate, compoundType, totalDays);
+                
+                // 计算总额
+                result.total = result.principal + result.normalInterest + result.penalty + result.compound;
+                
+                // 显示结果
+                displayResults(result, repaymentMethod, singleRepayment);
+                
+                // 显示结果区域
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('noResultSection').style.display = 'none';
+                
+            } catch (error) {
+                console.error('计算错误:', error);
+                alert('计算过程中出现错误，请检查输入数据！');
+            }
+        }
+        
+        // 等额本息计算
+        function calculateEqualPrincipalInterest(principal, installments) {
+            var monthlyRate = parseFloat(document.getElementById('annualRate').value) / 100 / 12;
+            var schedule = [];
+            
+            // 计算每月还款额
+            var temp1 = Math.pow(1 + monthlyRate, installments);
+            var monthlyPayment = principal * monthlyRate * temp1 / (temp1 - 1);
+            
+            var remainingPrincipal = principal;
+            var totalInterest = 0;
+            
+            for (var i = 1; i <= installments; i++) {
+                var interest = remainingPrincipal * monthlyRate;
+                var principalPayment = monthlyPayment - interest;
+                
+                remainingPrincipal -= principalPayment;
+                
+                schedule.push({
+                    period: i,
+                    principalPayment: principalPayment,
+                    interest: interest,
+                    totalPayment: monthlyPayment,
+                    remainingPrincipal: Math.max(0, remainingPrincipal),
+                    beginPrincipal: remainingPrincipal + principalPayment
+                });
+                
+                totalInterest += interest;
+                
+                // 如果本金已还完，跳出循环
+                if (remainingPrincipal <= 0) break;
+            }
+            
+            return {
+                principal: principal,
+                normalInterest: totalInterest,
+                schedule: schedule,
+                repaymentMethod: '等额本息',
+                formula: '每月还款额 = 本金 × 月利率 × (1+月利率)^期数 ÷ [(1+月利率)^期数 -1]'
+            };
+        }
+        
+        // 等额本金计算
+        function calculateEqualPrincipal(principal, installments) {
+            var monthlyRate = parseFloat(document.getElementById('annualRate').value) / 100 / 12;
+            var schedule = [];
+            
+            // 每月偿还本金
+            var principalPaymentPerMonth = principal / installments;
+            
+            var remainingPrincipal = principal;
+            var totalInterest = 0;
+            
+            for (var i = 1; i <= installments; i++) {
+                var interest = remainingPrincipal * monthlyRate;
+                var totalPayment = principalPaymentPerMonth + interest;
+                
+                schedule.push({
+                    period: i,
+                    principalPayment: principalPaymentPerMonth,
+                    interest: interest,
+                    totalPayment: totalPayment,
+                    remainingPrincipal: Math.max(0, remainingPrincipal - principalPaymentPerMonth),
+                    beginPrincipal: remainingPrincipal
+                });
+                
+                remainingPrincipal -= principalPaymentPerMonth;
+                totalInterest += interest;
+                
+                // 如果本金已还完，跳出循环
+                if (remainingPrincipal <= 0) break;
+            }
+            
+            return {
+                principal: principal,
+                normalInterest: totalInterest,
+                schedule: schedule,
+                repaymentMethod: '等额本金',
+                formula: '每月还款额 = (本金÷期数) + (剩余本金×月利率)'
+            };
+        }
+        
+        // 先息后本计算
+        function calculateInterestFirst(principal, installments, singleRepayment) {
+            var monthlyRate = parseFloat(document.getElementById('annualRate').value) / 100 / 12;
+            var schedule = [];
+            var totalInterest = 0;
+            
+            if (singleRepayment) {
+                // 一次性还本付息
+                totalInterest = principal * monthlyRate * installments;
+                
+                schedule.push({
+                    period: 1,
+                    principalPayment: principal,
+                    interest: totalInterest,
+                    totalPayment: principal + totalInterest,
+                    remainingPrincipal: 0,
+                    beginPrincipal: principal
+                });
+            } else {
+                // 按月付息，到期还本
+                for (var i = 1; i <= installments; i++) {
+                    var interest = principal * monthlyRate;
+                    
+                    // 最后一期还本金
+                    var principalPayment = i === installments ? principal : 0;
+                    var totalPayment = principalPayment + interest;
+                    var remainingPrincipal = i === installments ? 0 : principal;
+                    
+                    schedule.push({
+                        period: i,
+                        principalPayment: principalPayment,
+                        interest: interest,
+                        totalPayment: totalPayment,
+                        remainingPrincipal: remainingPrincipal,
+                        beginPrincipal: principal
+                    });
+                    
+                    totalInterest += interest;
+                }
+            }
+            
+            return {
+                principal: principal,
+                normalInterest: totalInterest,
+                schedule: schedule,
+                repaymentMethod: '先息后本' + (singleRepayment ? '（一次性）' : '（按月付息）'),
+                formula: singleRepayment ? 
+                    '到期利息 = 本金 × 月利率 × 期数' : 
+                    '每月利息 = 本金 × 月利率，最后一期还本金'
+            };
+        }
+        
+        // 先本后息计算
+        function calculatePrincipalFirst(principal, installments, singleRepayment) {
+            var monthlyRate = parseFloat(document.getElementById('annualRate').value) / 100 / 12;
+            var schedule = [];
+            var totalInterest = 0;
+            
+            if (singleRepayment) {
+                // 一次性还本付息（与先息后本相同）
+                totalInterest = principal * monthlyRate * installments;
+                
+                schedule.push({
+                    period: 1,
+                    principalPayment: principal,
+                    interest: totalInterest,
+                    totalPayment: principal + totalInterest,
+                    remainingPrincipal: 0,
+                    beginPrincipal: principal
+                });
+            } else {
+                // 先还本金，最后还利息
+                var principalPaymentPerMonth = principal / installments;
+                var remainingPrincipal = principal;
+                
+                // 计算总利息
+                for (var i = 0; i < installments; i++) {
+                    totalInterest += remainingPrincipal * monthlyRate;
+                    remainingPrincipal -= principalPaymentPerMonth;
+                }
+                
+                // 重置
+                remainingPrincipal = principal;
+                totalInterest = 0;
+                
+                for (var i = 1; i <= installments; i++) {
+                    var interest = i === installments ? totalInterest : 0;
+                    var totalPayment = principalPaymentPerMonth + interest;
+                    
+                    schedule.push({
+                        period: i,
+                        principalPayment: principalPaymentPerMonth,
+                        interest: interest,
+                        totalPayment: totalPayment,
+                        remainingPrincipal: Math.max(0, remainingPrincipal - principalPaymentPerMonth),
+                        beginPrincipal: remainingPrincipal
+                    });
+                    
+                    remainingPrincipal -= principalPaymentPerMonth;
+                    totalInterest += remainingPrincipal * monthlyRate;
+                }
+                
+                // 更新最后一期的利息
+                if (schedule.length > 0) {
+                    schedule[schedule.length - 1].interest = totalInterest;
+                    schedule[schedule.length - 1].totalPayment = principalPaymentPerMonth + totalInterest;
+                }
+            }
+            
+            return {
+                principal: principal,
+                normalInterest: totalInterest,
+                schedule: schedule,
+                repaymentMethod: '先本后息' + (singleRepayment ? '（一次性）' : '（按月还本）'),
+                formula: singleRepayment ? 
+                    '到期利息 = 本金 × 月利率 × 期数' : 
+                    '每月还本金，最后一期还全部利息'
+            };
+        }
+        
+        // 计算罚息
+        function calculatePenalty(principal, interest, penaltyRate, penaltyBase, overdueDays) {
+            if (overdueDays <= 0) return 0;
+            
+            var baseAmount = principal;
+            
+            if (penaltyBase === 'principal_interest') {
+                baseAmount = principal + interest;
+            } else if (penaltyBase === 'total') {
+                baseAmount = principal + interest;
+            }
+            
+            // 按日计算罚息
+            return baseAmount * penaltyRate * overdueDays / 365;
+        }
+        
+        // 计算复利
+        function calculateCompoundInterest(interest, annualRate, compoundType, totalDays) {
+            if (compoundType === 'none' || interest <= 0) return 0;
+            
+            var periods, ratePerPeriod;
+            
+            switch (compoundType) {
+                case 'monthly':
+                    periods = Math.max(1, Math.floor(totalDays / 30));
+                    ratePerPeriod = annualRate / 12;
+                    break;
+                case 'quarterly':
+                    periods = Math.max(1, Math.floor(totalDays / 90));
+                    ratePerPeriod = annualRate / 4;
+                    break;
+                case 'yearly':
+                    periods = Math.max(1, Math.floor(totalDays / 365));
+                    ratePerPeriod = annualRate;
+                    break;
+                default:
+                    return 0;
+            }
+            
+            // 使用兼容的指数计算
+            var powerResult = 1;
+            for (var i = 0; i < periods; i++) {
+                powerResult *= (1 + ratePerPeriod);
+            }
+            
+            return interest * powerResult - interest;
+        }
+        
+        // 显示结果
+        function displayResults(result, repaymentMethod, singleRepayment) {
+            // 更新摘要
+            document.getElementById('summaryPrincipal').textContent = formatNumber(result.principal);
+            document.getElementById('summaryInterest').textContent = formatNumber(result.normalInterest);
+            document.getElementById('summaryPenalty').textContent = formatNumber(result.penalty);
+            document.getElementById('summaryCompound').textContent = formatNumber(result.compound);
+            document.getElementById('summaryTotal').textContent = formatNumber(result.total);
+            
+            // 生成还款计划表
+            generateScheduleTable(result.schedule);
+            
+            // 存储当前还款计划数据用于导出
+            currentScheduleData = result.schedule;
+            
+            // 生成详细计算过程
+            generateCalculationDetails(result);
+            
+            // 生成司法文书文本
+            generateDocumentText(result);
+        }
+        
+        // 生成还款计划表
+        function generateScheduleTable(schedule) {
+            var tbody = document.getElementById('scheduleBody');
+            var tfoot = document.getElementById('scheduleFooter');
+            tbody.innerHTML = '';
+            tfoot.innerHTML = '';
+            
+            if (!schedule || schedule.length === 0) {
+                var row = document.createElement('tr');
+                row.innerHTML = '<td colspan="8" style="text-align:center;padding:20px;">暂无还款计划数据</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            // 获取实际还款日期
+            var actualDate = new Date(document.getElementById('actualDate').value);
+            var loanDate = new Date(document.getElementById('loanDate').value);
+            
+            // 计算汇总数据
+            var totalPrincipal = 0;
+            var totalInterest = 0;
+            var totalPayment = 0;
+            
+            for (var i = 0; i < schedule.length; i++) {
+                var item = schedule[i];
+                
+                // 计算还款日期（模拟，从借款日期开始每月递增）
+                var repayDate = new Date(loanDate);
+                repayDate.setMonth(repayDate.getMonth() + item.period);
+                
+                // 判断是否逾期
+                var status = repayDate > actualDate ? '逾期' : '正常';
+                var statusColor = status === '逾期' ? '#e74c3c' : '#27ae60';
+                var statusStyle = 'color:' + statusColor + ';font-weight:' + (status === '逾期' ? 'bold' : 'normal');
+                
+                var row = document.createElement('tr');
+                row.innerHTML = '<td>' + item.period + '</td>' +
+                               '<td>' + formatDateDisplay(repayDate) + '</td>' +
+                               '<td>' + formatNumber(item.beginPrincipal || (item.principalPayment + item.remainingPrincipal)) + '</td>' +
+                               '<td>' + formatNumber(item.principalPayment) + '</td>' +
+                               '<td>' + formatNumber(item.interest) + '</td>' +
+                               '<td>' + formatNumber(item.totalPayment) + '</td>' +
+                               '<td>' + formatNumber(item.remainingPrincipal) + '</td>' +
+                               '<td style="' + statusStyle + '">' + status + '</td>';
+                
+                tbody.appendChild(row);
+                
+                // 累加汇总
+                totalPrincipal += item.principalPayment;
+                totalInterest += item.interest;
+                totalPayment += item.totalPayment;
+            }
+            
+            // 添加汇总行
+            var footerRow = document.createElement('tr');
+            footerRow.style.cssText = 'background-color:#f0f8ff;font-weight:bold;';
+            footerRow.innerHTML = '<td colspan="2">总计</td>' +
+                                 '<td>—</td>' +
+                                 '<td>' + formatNumber(totalPrincipal) + '</td>' +
+                                 '<td>' + formatNumber(totalInterest) + '</td>' +
+                                 '<td>' + formatNumber(totalPayment) + '</td>' +
+                                 '<td>—</td>' +
+                                 '<td>—</td>';
+            tfoot.appendChild(footerRow);
+        }
+        
+        // 生成详细计算过程
+        function generateCalculationDetails(result) {
+            var detailsDiv = document.getElementById('calculationDetails');
+            
+            var loanDate = new Date(document.getElementById('loanDate').value);
+            var dueDate = new Date(document.getElementById('dueDate').value);
+            var actualDate = new Date(document.getElementById('actualDate').value);
+            
+            var totalDays = Math.max(1, Math.ceil((actualDate - loanDate) / (1000 * 60 * 60 * 24)));
+            var normalDays = Math.max(1, Math.ceil((dueDate - loanDate) / (1000 * 60 * 60 * 24)));
+            var overdueDays = Math.max(0, Math.ceil((actualDate - dueDate) / (1000 * 60 * 60 * 24)));
+            
+            var annualRate = parseFloat(document.getElementById('annualRate').value);
+            var penaltyRate = parseFloat(document.getElementById('penaltyRate').value);
+            
+            var details = '<h4 style="color:#3498db;margin-bottom:15px;">📋 计算参数</h4>' +
+                         '<div style="margin-bottom:20px;">' +
+                         '<table style="width:100%;border-collapse:collapse;">' +
+                         '<tr><td style="padding:8px;border-bottom:1px solid #eee;"><strong>还款方式:</strong></td><td style="padding:8px;border-bottom:1px solid #eee;">' + result.repaymentMethod + '</td></tr>' +
+                         '<tr><td style="padding:8px;border-bottom:1px solid #eee;"><strong>借款本金:</strong></td><td style="padding:8px;border-bottom:1px solid #eee;">' + formatNumber(result.principal) + '元</td></tr>' +
+                         '<tr><td style="padding:8px;border-bottom:1px solid #eee;"><strong>年利率:</strong></td><td style="padding:8px;border-bottom:1px solid #eee;">' + annualRate.toFixed(2) + '%</td></tr>' +
+                         '<tr><td style="padding:8px;border-bottom:1px solid #eee;"><strong>借款期限:</strong></td><td style="padding:8px;border-bottom:1px solid #eee;">' + totalDays + '天</td></tr>' +
+                         '<tr><td style="padding:8px;border-bottom:1px solid #eee;"><strong>正常期限:</strong></td><td style="padding:8px;border-bottom:1px solid #eee;">' + normalDays + '天</td></tr>' +
+                         '<tr><td style="padding:8px;"><strong>逾期天数:</strong></td><td style="padding:8px;">' + overdueDays + '天</td></tr>' +
+                         '</table>' +
+                         '</div>' +
+                         '<h4 style="color:#3498db;margin-bottom:15px;">🧮 计算公式</h4>' +
+                         '<div style="background:#f8f9fa;padding:15px;border-radius:4px;margin-bottom:20px;font-family:monospace;">' +
+                         result.formula +
+                         '</div>';
+            
+            detailsDiv.innerHTML = details;
+        }
+        
+        // 生成司法文书文本
+        function generateDocumentText(result) {
+            var loanDate = new Date(document.getElementById('loanDate').value);
+            var dueDate = new Date(document.getElementById('dueDate').value);
+            var actualDate = new Date(document.getElementById('actualDate').value);
+            var annualRate = parseFloat(document.getElementById('annualRate').value);
+            var penaltyRate = parseFloat(document.getElementById('penaltyRate').value);
+            
+            var docText = '<p><strong>关于借款利息计算的说明</strong></p><br>' +
+                         '<p>一、基本事实</p>' +
+                         '<p>借款人于' + formatDateDisplay(loanDate) + '向出借人借款人民币' + formatNumber(result.principal) + '元，约定年利率' + annualRate.toFixed(2) + '%，还款方式为' + result.repaymentMethod + '，应于' + formatDateDisplay(dueDate) + '前还清本息。借款人逾期至' + formatDateDisplay(actualDate) + '仍未完全履行还款义务。</p><br>' +
+                         '<p>二、计算依据</p>' +
+                         '<p>根据《中华人民共和国民法典》第六百七十六条、第六百八十条，《最高人民法院关于审理民间借贷案件适用法律若干问题的规定》第二十五条、第二十八条、第二十九条之规定，对借款利息计算如下：</p><br>' +
+                         '<p>三、计算结果</p>' +
+                         '<ol>' +
+                         '<li>借款本金：人民币' + formatNumber(result.principal) + '元；</li>' +
+                         '<li>约定期间利息：人民币' + formatNumber(result.normalInterest) + '元（按年利率' + annualRate.toFixed(2) + '%计算）；</li>' +
+                         '<li>逾期罚息：人民币' + formatNumber(result.penalty) + '元（按罚息利率' + penaltyRate.toFixed(2) + '%计算）；</li>' +
+                         '<li>复利：人民币' + formatNumber(result.compound) + '元。</li>' +
+                         '</ol><br>' +
+                         '<p>四、总计应还金额</p>' +
+                         '<p>以上各项合计人民币' + formatNumber(result.total) + '元。</p><br>' +
+                         '<p>五、结论</p>' +
+                         '<p>根据上述计算，借款人应向出借人支付借款本息、罚息及复利共计人民币' + formatNumber(result.total) + '元。</p>';
+            
+            document.getElementById('documentText').innerHTML = docText;
+        }
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            // 移除所有active类
+            var tabs = document.getElementsByClassName('tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].className = tabs[i].className.replace(' active', '');
+            }
+            
+            var contents = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].className = contents[i].className.replace(' active', '');
+            }
+            
+            // 激活当前标签页
+            var activeTab = document.querySelector('.tab[onclick="switchTab(\'' + tabName + '\')"]');
+            var activeContent = document.getElementById(tabName);
+            
+            if (activeTab) activeTab.className += ' active';
+            if (activeContent) activeContent.className += ' active';
+            
+            currentTab = tabName;
+        }
+        
+        // ============== Excel导出功能 ==============
+        
+        // 导出还款计划表为Excel
+        function exportToExcel() {
+            if (!currentScheduleData || currentScheduleData.length === 0) {
+                alert('没有可导出的还款计划数据！');
+                return;
+            }
+            
+            try {
+                // 获取基本参数用于文件名
+                var principal = document.getElementById('principal').value;
+                var loanDate = formatDateDisplay(new Date(document.getElementById('loanDate').value));
+                var repaymentMethod = document.querySelector('input[name="repayment_method"]:checked').nextElementSibling.textContent;
+                
+                // 创建Excel内容
+                var excelContent = createExcelContent();
+                
+                // 创建Blob对象
+                var blob = new Blob([excelContent], {
+                    type: 'application/vnd.ms-excel;charset=utf-8'
+                });
+                
+                // 创建下载链接
+                var downloadLink = document.createElement('a');
+                var fileName = '还款计划表_' + principal + '元_' + loanDate + '_' + repaymentMethod + '.xls';
+                fileName = fileName.replace(/[/\\?%*:|"<>]/g, '-'); // 移除非法文件名字符
+                
+                if (window.navigator.msSaveOrOpenBlob) {
+                    // IE浏览器
+                    window.navigator.msSaveOrOpenBlob(blob, fileName);
+                } else {
+                    // 其他浏览器
+                    var url = window.URL.createObjectURL(blob);
+                    downloadLink.href = url;
+                    downloadLink.download = fileName;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    window.URL.revokeObjectURL(url);
+                }
+                
+                alert('还款计划表已成功导出为Excel文件！');
+            } catch (error) {
+                console.error('导出Excel失败:', error);
+                alert('导出Excel失败，请重试或使用复制表格功能。');
+            }
+        }
+        
+        // 创建Excel内容
+        function createExcelContent() {
+            // 获取基本参数
+            var principal = document.getElementById('principal').value;
+            var loanDate = formatDateDisplay(new Date(document.getElementById('loanDate').value));
+            var dueDate = formatDateDisplay(new Date(document.getElementById('dueDate').value));
+            var actualDate = formatDateDisplay(new Date(document.getElementById('actualDate').value));
+            var annualRate = document.getElementById('annualRate').value;
+            var penaltyRate = document.getElementById('penaltyRate').value;
+            var repaymentMethod = document.querySelector('input[name="repayment_method"]:checked').nextElementSibling.textContent;
+            
+            // 计算汇总数据
+            var totalPrincipal = 0;
+            var totalInterest = 0;
+            var totalPayment = 0;
+            var loanDateObj = new Date(document.getElementById('loanDate').value);
+            
+            for (var i = 0; i < currentScheduleData.length; i++) {
+                var item = currentScheduleData[i];
+                totalPrincipal += item.principalPayment;
+                totalInterest += item.interest;
+                totalPayment += item.totalPayment;
+            }
+            
+            // 创建Excel HTML格式
+            var excelContent = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+                               '<head>' +
+                               '<meta charset="UTF-8">' +
+                               '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>还款计划表</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->' +
+                               '<style>td { mso-number-format:\\@; } .number { mso-number-format:"0\\.00"; }</style>' +
+                               '</head>' +
+                               '<body>' +
+                               '<table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;">';
+            
+            // 添加标题和基本信息
+            excelContent += '<tr><th colspan="8" style="background-color:#3498db;color:white;font-size:16px;padding:15px;">民间借贷还款计划表</th></tr>' +
+                           '<tr><td colspan="8" style="padding:10px;background-color:#f8f9fa;">' +
+                           '<strong>基本信息：</strong>借款本金：' + formatNumber(principal) + '元，年利率：' + annualRate + '%，还款方式：' + repaymentMethod + '<br>' +
+                           '<strong>日期信息：</strong>借款日期：' + loanDate + '，约定还款日期：' + dueDate + '，实际还款日期：' + actualDate + '<br>' +
+                           '<strong>罚息设置：</strong>罚息利率：' + penaltyRate + '%，计算基数：' + document.getElementById('penaltyBase').options[document.getElementById('penaltyBase').selectedIndex].text +
+                           '</td></tr>';
+            
+            // 添加表头
+            excelContent += '<tr style="background-color:#3498db;color:white;font-weight:bold;">' +
+                           '<th width="60">期数</th>' +
+                           '<th width="100">还款日期</th>' +
+                           '<th width="100">期初本金(元)</th>' +
+                           '<th width="100">应还本金(元)</th>' +
+                           '<th width="100">应还利息(元)</th>' +
+                           '<th width="100">当期还款(元)</th>' +
+                           '<th width="100">期末本金(元)</th>' +
+                           '<th width="80">状态</th>' +
+                           '</tr>';
+            
+            // 添加数据行
+            for (var i = 0; i < currentScheduleData.length; i++) {
+                var item = currentScheduleData[i];
+                
+                // 计算还款日期
+                var repayDate = new Date(loanDateObj);
+                repayDate.setMonth(repayDate.getMonth() + item.period);
+                
+                // 判断是否逾期
+                var actualDateObj = new Date(document.getElementById('actualDate').value);
+                var status = repayDate > actualDateObj ? '逾期' : '正常';
+                
+                excelContent += '<tr>' +
+                               '<td align="center">' + item.period + '</td>' +
+                               '<td align="center">' + formatDateDisplay(repayDate) + '</td>' +
+                               '<td class="number" align="right">' + formatNumber(item.beginPrincipal || (item.principalPayment + item.remainingPrincipal)) + '</td>' +
+                               '<td class="number" align="right">' + formatNumber(item.principalPayment) + '</td>' +
+                               '<td class="number" align="right">' + formatNumber(item.interest) + '</td>' +
+                               '<td class="number" align="right">' + formatNumber(item.totalPayment) + '</td>' +
+                               '<td class="number" align="right">' + formatNumber(item.remainingPrincipal) + '</td>' +
+                               '<td align="center" style="color:' + (status === '逾期' ? '#e74c3c' : '#27ae60') + ';font-weight:' + (status === '逾期' ? 'bold' : 'normal') + '">' + status + '</td>' +
+                               '</tr>';
+            }
+            
+            // 添加汇总行
+            excelContent += '<tr style="background-color:#f0f8ff;font-weight:bold;">' +
+                           '<td colspan="2" align="center">总计</td>' +
+                           '<td>—</td>' +
+                           '<td class="number" align="right">' + formatNumber(totalPrincipal) + '</td>' +
+                           '<td class="number" align="right">' + formatNumber(totalInterest) + '</td>' +
+                           '<td class="number" align="right">' + formatNumber(totalPayment) + '</td>' +
+                           '<td>—</td>' +
+                           '<td>—</td>' +
+                           '</tr>';
+            
+            // 添加摘要信息
+            var summaryPrincipal = document.getElementById('summaryPrincipal').textContent;
+            var summaryInterest = document.getElementById('summaryInterest').textContent;
+            var summaryPenalty = document.getElementById('summaryPenalty').textContent;
+            var summaryCompound = document.getElementById('summaryCompound').textContent;
+            var summaryTotal = document.getElementById('summaryTotal').textContent;
+            
+            excelContent += '<tr><td colspan="8" style="padding:10px;background-color:#f8f9fa;">' +
+                           '<strong>还款摘要：</strong>' +
+                           '本金：' + summaryPrincipal + '元，利息：' + summaryInterest + '元，罚息：' + summaryPenalty + '元，复利：' + summaryCompound + '元，总计：' + summaryTotal + '元' +
+                           '</td></tr>';
+            
+            // 添加生成信息
+            var generateDate = new Date();
+            excelContent += '<tr><td colspan="8" style="padding:10px;background-color:#f8f9fa;font-size:12px;color:#666;">' +
+                           '生成时间：' + formatDateTimeDisplay(generateDate) + ' | 民间借贷计算器生成' +
+                           '</td></tr>';
+            
+            excelContent += '</table></body></html>';
+            
+            return excelContent;
+        }
+        
+        // 复制表格内容
+        function copyTable() {
+            try {
+                var table = document.getElementById('repaymentSchedule');
+                var range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('还款计划表已复制到剪贴板！');
+            } catch (error) {
+                alert('复制失败，请手动选择表格内容进行复制。');
+            }
+        }
+        
+        // 打印表格
+        function printTable() {
+            var printContent = document.getElementById('schedule').innerHTML;
+            var originalContent = document.body.innerHTML;
+            
+            document.body.innerHTML = '<h1 style="text-align:center;margin:20px 0;">还款计划表</h1>' + printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            
+            // 重新绑定事件
+            window.onload();
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('noResultSection').style.display = 'none';
+            switchTab('schedule');
+        }
+        
+        // 复制判决书文本
+        function copyDocumentText() {
+            var text = document.getElementById('documentText').innerText;
+            
+            // 兼容性处理
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    alert('判决书文本已复制到剪贴板！');
+                }, function(err) {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+        
+        // 降级复制方法
+        function fallbackCopyText(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                var successful = document.execCommand('copy');
+                alert(successful ? '文本已复制到剪贴板！' : '复制失败，请手动复制文本。');
+            } catch (err) {
+                alert('复制失败，请手动复制文本。');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        // 打印文书
+        function printDocument() {
+            var printContent = document.getElementById('document').innerHTML;
+            var originalContent = document.body.innerHTML;
+            
+            document.body.innerHTML = '<h1 style="text-align:center;margin:20px 0;">司法文书</h1>' + printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            
+            // 重新绑定事件
+            window.onload();
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('noResultSection').style.display = 'none';
+            switchTab('document');
+        }
+        
+        // 重置表单
+        function resetForm() {
+            document.getElementById('principal').value = '100000';
+            
+            var today = new Date();
+            var oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+            var threeMonthsLater = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+            
+            document.getElementById('loanDate').value = formatDateInput(oneYearAgo);
+            document.getElementById('dueDate').value = formatDateInput(today);
+            document.getElementById('actualDate').value = formatDateInput(threeMonthsLater);
+            
+            document.getElementById('annualRate').value = '4.35';
+            document.getElementById('penaltyRate').value = '5';
+            document.getElementById('installments').value = '12';
+            document.getElementById('penaltyBase').value = 'principal_interest';
+            document.getElementById('compoundType').value = 'none';
+            
+            // 重置还款方式
+            document.getElementById('method1').checked = true;
+            
+            // 重置利率分段
+            document.getElementById('ratePeriodsContainer').innerHTML = '';
+            addRatePeriod();
+            
+            // 重置数据
+            currentScheduleData = [];
+            
+            // 隐藏结果区域
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('noResultSection').style.display = 'block';
+        }
+        
+        // 辅助函数：格式化日期输入
+        function formatDateInput(date) {
+            var year = date.getFullYear();
+            var month = (date.getMonth() + 1).toString();
+            var day = date.getDate().toString();
+            
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            
+            return year + '-' + month + '-' + day;
+        }
+        
+        // 辅助函数：格式化日期显示
+        function formatDateDisplay(date) {
+            return date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日';
+        }
+        
+        // 辅助函数：格式化日期时间显示
+        function formatDateTimeDisplay(date) {
+            var hours = date.getHours().toString();
+            var minutes = date.getMinutes().toString();
+            var seconds = date.getSeconds().toString();
+            
+            if (hours.length < 2) hours = '0' + hours;
+            if (minutes.length < 2) minutes = '0' + minutes;
+            if (seconds.length < 2) seconds = '0' + seconds;
+            
+            return formatDateDisplay(date) + ' ' + hours + ':' + minutes + ':' + seconds;
+        }
+        
+        // 辅助函数：格式化数字（保留两位小数）
+        function formatNumber(num) {
+            if (isNaN(num)) return '0.00';
+            return parseFloat(num).toFixed(2);
+        }
+    </script>
+</body>
+</html>
